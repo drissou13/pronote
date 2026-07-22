@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRONOTE - Multi-postes Temps Réel (Google Firebase)</title>
+  <style>
+    /* --- STYLES GENERAUX --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; }
+
+    /* --- PAGE DE CONNEXION --- */
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; }
+    .login-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .login-card h1 { color: #1e3a8a; margin-bottom: 6px; }
+    .form-group { margin-bottom: 12px; text-align: left; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; color: #475569; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .demo-info { margin-top: 15px; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 0.75rem; color: #64748b; text-align: left; }
+
+    /* --- APPLICATION --- */
+    #app { display: none; flex-direction: column; height: 100vh; }
+    header { background: #1e3a8a; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+    nav { width: 220px; background: #0f172a; padding-top: 15px; }
+    nav button { background: none; border: none; color: #94a3b8; padding: 14px 20px; width: 100%; text-align: left; cursor: pointer; border-left: 4px solid transparent; font-size: 0.95rem; }
+    nav button.active, nav button:hover { color: white; background: #1e293b; }
+    nav button.active { border-left-color: #3b82f6; font-weight: bold; }
+    main { flex: 1; padding: 24px; overflow-y: auto; }
+
+    /* --- CARDS & TABLES --- */
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { padding: 15px; border-radius: 8px; text-align: center; color: white; }
+    .stat-absences { background: #ef4444; }
+    .stat-retards { background: #f59e0b; }
+    .stat-value { font-size: 2.2rem; font-weight: bold; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-size: 0.8rem; text-transform: uppercase; color: #64748b; }
+
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; display: inline-block; }
+    .bg-green { background: #10b981; }
+    .bg-red { background: #ef4444; }
+    .bg-orange { background: #f59e0b; }
+    .bg-blue { background: #3b82f6; }
+
+    .child-selector { margin-bottom: 20px; background: #cbd5e1; padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+    .form-inline { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .form-inline input, .form-inline select, .form-inline button { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .form-inline button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; }
+    
+    .sync-status { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; margin-right: 5px; }
+  </style>
+</head>
+<body>
+
+  <!-- CONNEXION -->
+  <div id="login-page" class="login-container">
+    <div class="login-card">
+      <h1>PRONOTE</h1>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px">Synchronisé avec Google Firebase</p>
+      
+      <div class="form-group">
+        <label>Espace de connexion</label>
+        <select id="user-type">
+          <option value="eleve">Espace Élève</option>
+          <option value="parent">Espace Parents</option>
+          <option value="prof">Espace Professeur</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Identifiant</label>
+        <input type="text" id="username" placeholder="eleve, parent ou prof">
+      </div>
+
+      <button class="btn-submit" onclick="handleLogin()">Se connecter</button>
+
+      <div class="demo-info">
+        <strong>Identifiants de démo :</strong><br>
+        • Élève : <code>eleve</code> | Parent : <code>parent</code> | Prof : <code>prof</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION -->
+  <div id="app">
+    <header>
+      <div style="font-weight:bold; font-size:1.1rem">
+        <span class="sync-status" title="Connecté au cloud Google"></span> PRONOTE <span id="role-tag" style="font-weight:normal; font-size:0.8rem; opacity:0.8"></span>
+      </div>
+      <div>
+        <span id="user-display"></span> 
+        <button onclick="location.reload()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:10px">Déconnexion</button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <nav id="sidebar-nav"></nav>
+
+      <main>
+        <div id="parent-controls" class="child-selector" style="display:none">
+          <strong>Enfant suivi : </strong>
+          <select id="child-select" onchange="changeStudent(this.value)">
+            <option value="thomas">Thomas DUBOIS (3ème B)</option>
+            <option value="emma">Emma DUBOIS (5ème A)</option>
+          </select>
+        </div>
+
+        <!-- ONGLET ACCUEIL -->
+        <section id="dashboard" class="tab-content">
+          <h2 id="dash-title">Accueil</h2>
+          <div class="card" style="margin-top:15px">
+            <h3>Base de données en temps réel</h3>
+            <p style="margin-top:8px; color:#475569">Les modifications apportées par un professeur sur un poste apparaîtront automatiquement ici.</p>
+          </div>
+        </section>
+
+        <!-- ONGLET NOTES -->
+        <section id="grades" class="tab-content">
+          <h2>Relevé de notes</h2>
+          <div class="card">
+            <table>
+              <thead>
+                <tr><th>Matière</th><th>Devoir</th><th>Note</th></tr>
+              </thead>
+              <tbody id="grades-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ONGLET VIE SCOLAIRE -->
+        <section id="viesco" class="tab-content">
+          <h2>Vie Scolaire</h2>
+          <div class="stats-grid">
+            <div class="stat-card stat-absences">
+              <div class="stat-value" id="count-absences">0</div>
+              <div>Absence(s)</div>
+            </div>
+            <div class="stat-card stat-retards">
+              <div class="stat-value" id="count-retards">0</div>
+              <div>Retard(s)</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Historique en direct</h3>
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Type</th><th>Motif</th><th>Statut</th></tr>
+              </thead>
+              <tbody id="incidents-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ONGLET PROF : NOTES -->
+        <section id="prof-grades" class="tab-content">
+          <h2>Espace Professeur - Saisie de Note</h2>
+          <div class="card">
+            <form class="form-inline" onsubmit="profAddGrade(event)">
+              <select id="prof-student-grade">
+                <option value="thomas">Thomas DUBOIS (3ème B)</option>
+                <option value="emma">Emma DUBOIS (5ème A)</option>
+              </select>
+              <input type="text" id="prof-subject" placeholder="Matière" required>
+              <input type="text" id="prof-title" placeholder="Titre du devoir" required>
+              <input type="number" step="0.5" min="0" max="20" id="prof-note" placeholder="Note /20" required>
+              <button type="submit">Publier la note sur Google Cloud</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ONGLET PROF : VIE SCOLAIRE -->
+        <section id="prof-viesco" class="tab-content">
+          <h2>Espace Professeur - Signalement Vie Scolaire</h2>
+          <div class="card">
+            <form class="form-inline" onsubmit="profAddIncident(event)">
+              <select id="prof-student-inc">
+                <option value="thomas">Thomas DUBOIS (3ème B)</option>
+                <option value="emma">Emma DUBOIS (5ème A)</option>
+              </select>
+              <select id="prof-inc-type">
+                <option value="Absence">Absence</option>
+                <option value="Retard">Retard</option>
+              </select>
+              <input type="text" id="prof-inc-motif" placeholder="Motif ou cours" required>
+              <button type="submit" style="background:#ef4444">Signaler en direct</button>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- SCRIPT FIREBASE GOOGLE (SDK v9) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ⚠️ REMPLACEZ AVEC VOS PROPRES CLÉS FIREBASE (Trouvables dans la console Firebase)
+    const firebaseConfig = {
+      apiKey: "VOTRE_API_KEY",
+      authDomain: "votre-projet.firebaseapp.com",
+      projectId: "votre-projet-id",
+      storageBucket: "votre-projet.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+
+    // Initialisation
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.currentSession = { role: null, activeStudent: 'thomas' };
+    window.dbData = {};
+
+    // ECOUTE EN TEMPS RÉEL DE GOOGLE FIREBASE
+    // Chaque modification sur n'importe quel poste déclenche automatiquement cette fonction !
+    function listenToStudentData(studentId) {
+      const studentRef = doc(db, "students", studentId);
+      
+      onSnapshot(studentRef, (docSnap) => {
+        if (docSnap.exists()) {
+          window.dbData[studentId] = docSnap.data();
+        } else {
+          // Création initiale si le document n'existe pas encore sur Google
+          const defaultData = {
+            name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
+            class: studentId === 'thomas' ? "3ème B" : "5ème A",
+            grades: [{ sub: "Maths", title: "Test Initial", val: 14 }],
+            incidents: []
+          };
+          setDoc(studentRef, defaultData);
+          window.dbData[studentId] = defaultData;
+        }
+        updateUI();
+      });
+    }
+
+    // Écoute des deux élèves en tâche de fond
+    listenToStudentData('thomas');
+    listenToStudentData('emma');
+
+    // EXPOSITION DES FONCTIONS AU WINDOW POUR LES ÉVÉNEMENTS HTML
+    window.handleLogin = function() {
+      const type = document.getElementById('user-type').value;
+      const username = document.getElementById('username').value.trim().toLowerCase();
+
+      if ((type === 'eleve' && username === 'eleve') ||
+          (type === 'parent' && username === 'parent') ||
+          (type === 'prof' && username === 'prof')) {
+        
+        window.currentSession.role = type;
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        
+        configureInterfaceForRole();
+        updateUI();
+      } else {
+        alert("Identifiants incorrects. Utilisez : eleve, parent ou prof.");
+      }
+    };
+
+    window.profAddGrade = async function(e) {
+      e.preventDefault();
+      const targetStudent = document.getElementById('prof-student-grade').value;
+      const sub = document.getElementById('prof-subject').value;
+      const title = document.getElementById('prof-title').value;
+      const val = parseFloat(document.getElementById('prof-note').value);
+
+      // Envoi direct à Google Firestore
+      const studentRef = doc(db, "students", targetStudent);
+      await updateDoc(studentRef, {
+        grades: arrayUnion({ sub, title, val })
+      });
+
+      alert("Note envoyée sur Google Cloud ! Elle apparaît immédiatement chez l'élève.");
+      e.target.reset();
+    };
+
+    window.profAddIncident = async function(e) {
+      e.preventDefault();
+      const targetStudent = document.getElementById('prof-student-inc').value;
+      const type = document.getElementById('prof-inc-type').value;
+      const motif = document.getElementById('prof-inc-motif').value;
+
+      // Envoi direct à Google Firestore
+      const studentRef = doc(db, "students", targetStudent);
+      await updateDoc(studentRef, {
+        incidents: arrayUnion({
+          date: "Aujourd'hui",
+          type: type,
+          motif: motif,
+          status: "Non justifié",
+          color: "bg-red"
+        })
+      });
+
+      alert("Signalement envoyé sur Google Cloud !");
+      e.target.reset();
+    };
+
+    window.switchTab = function(tabId, btnElement) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById(tabId);
+      if(target) target.classList.add('active');
+      if(btnElement) btnElement.classList.add('active');
+    };
+
+    window.changeStudent = function(val) {
+      window.currentSession.activeStudent = val;
+      updateUI();
+    };
+
+    function configureInterfaceForRole() {
+      const nav = document.getElementById('sidebar-nav');
+      const roleTag = document.getElementById('role-tag');
+      const parentControls = document.getElementById('parent-controls');
+
+      nav.innerHTML = '';
+      parentControls.style.display = 'none';
+
+      if (window.currentSession.role === 'prof') {
+        roleTag.innerText = "(Espace Professeur)";
+        document.getElementById('user-display').innerText = "M. MARTIN (Enseignant)";
+        
+        nav.innerHTML = `
+          <button class="nav-btn active" onclick="switchTab('prof-grades', this)">📝 Saisie des Notes</button>
+          <button class="nav-btn" onclick="switchTab('prof-viesco', this)">🚨 Signalements Vie Sco</button>
+        `;
+        switchTab('prof-grades');
+      } else {
+        if (window.currentSession.role === 'parent') {
+          roleTag.innerText = "(Espace Parents)";
+          parentControls.style.display = 'flex';
+        } else {
+          roleTag.innerText = "(Espace Élève)";
+        }
+
+        nav.innerHTML = `
+          <button class="nav-btn active" onclick="switchTab('dashboard', this)">🏠 Accueil</button>
+          <button class="nav-btn" onclick="switchTab('grades', this)">📊 Notes</button>
+          <button class="nav-btn" onclick="switchTab('viesco', this)">📅 Vie Scolaire</button>
+        `;
+        switchTab('dashboard');
+      }
+    }
+
+    function updateUI() {
+      if (window.currentSession.role === 'prof') return;
+
+      const student = window.dbData[window.currentSession.activeStudent];
+      if (!student) return;
+
+      if(window.currentSession.role === 'parent') {
+        document.getElementById('user-display').innerText = `Parent de ${student.name}`;
+      } else {
+        document.getElementById('user-display').innerText = `${student.name} (${student.class})`;
+      }
+
+      document.getElementById('dash-title').innerText = `Bienvenue, ${student.name}`;
+
+      // Rendus des notes
+      const gBody = document.getElementById('grades-table-body');
+      gBody.innerHTML = (student.grades || []).map(g => `
+        <tr>
+          <td><strong>${g.sub}</strong></td>
+          <td>${g.title}</td>
+          <td><span class="badge bg-blue">${g.val} / 20</span></td>
+        </tr>
+      `).join('');
+
+      // Rendus Vie Scolaire
+      const absCount = (student.incidents || []).filter(i => i.type === 'Absence').length;
+      const retCount = (student.incidents || []).filter(i => i.type === 'Retard').length;
+
+      document.getElementById('count-absences').innerText = absCount;
+      document.getElementById('count-retards').innerText = retCount;
+
+      const iBody = document.getElementById('incidents-table-body');
+      if(!student.incidents || student.incidents.length === 0) {
+        iBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8">Aucun incident.</td></tr>';
+      } else {
+        iBody.innerHTML = student.incidents.map(i => `
+          <tr>
+            <td>${i.date}</td>
+            <td><strong>${i.type}</strong></td>
+            <td>${i.motif}</td>
+            <td><span class="badge ${i.color}">${i.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>
