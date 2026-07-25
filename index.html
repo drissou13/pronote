@@ -3,32 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PRONOTE Mobile & Firebase</title>
+  <title>PRONOTE Mobile - Gestion Complète</title>
   <style>
-    /* --- RESET & VARIABLES --- */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: #f8fafc; color: #0f172a; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* --- PAGE DE CONNEXION --- */
     .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; padding: 16px; }
     .login-card { background: white; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
     .login-card h1 { color: #1e3a8a; margin-bottom: 4px; font-size: 1.8rem; }
     .form-group { margin-bottom: 14px; text-align: left; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    .form-group input, .form-group select, .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: #fff; }
-    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-    .btn-submit:active { background: #1d4ed8; }
-    .demo-info { margin-top: 16px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.8rem; color: #64748b; text-align: left; line-height: 1.4; }
+    .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: #fff; }
+    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; }
 
-    /* --- LAYOUT MOBILE & DESKTOP --- */
     #app { display: none; flex-direction: column; min-height: 100vh; }
-    
-    header { background: #1e3a8a; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .brand { font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    header { background: #1e3a8a; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .brand { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
     .sync-status { width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block; }
     
     .app-body { display: flex; flex: 1; flex-direction: column; }
-    
     nav { background: #0f172a; display: flex; overflow-x: auto; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
     nav button { background: none; border: none; color: #94a3b8; padding: 12px 8px; flex: 1; min-width: 70px; text-align: center; cursor: pointer; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; white-space: nowrap; }
     nav button.active { color: white; background: #1e293b; font-weight: bold; border-top: 3px solid #3b82f6; }
@@ -37,13 +30,12 @@
 
     @media (min-width: 768px) {
       .app-body { flex-direction: row; }
-      nav { position: static; width: 220px; flex-direction: column; overflow-x: visible; box-shadow: none; }
-      nav button { flex-direction: row; justify-content: flex-start; padding: 14px 20px; font-size: 0.95rem; border-top: none; border-left: 4px solid transparent; min-width: auto; }
+      nav { position: static; width: 220px; flex-direction: column; overflow-x: visible; }
+      nav button { flex-direction: row; justify-content: flex-start; padding: 14px 20px; font-size: 0.95rem; border-top: none; border-left: 4px solid transparent; }
       nav button.active { border-top: none; border-left-color: #3b82f6; }
       main { padding-bottom: 24px; }
     }
 
-    /* --- UI COMPONENT --- */
     .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -54,18 +46,17 @@
     .stat-retards { background: #f59e0b; }
     .stat-value { font-size: 1.8rem; font-weight: bold; }
 
-    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.9rem; }
     th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    th { background: #f8fafc; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
+    th { background: #f8fafc; font-size: 0.75rem; text-transform: uppercase; color: #64748b; }
 
     .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; color: white; display: inline-block; }
     .bg-green { background: #10b981; }
     .bg-red { background: #ef4444; }
-    .bg-orange { background: #f59e0b; }
     .bg-blue { background: #3b82f6; }
 
-    .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; margin-right: 4px; }
+    .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
     .btn-del { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
 
     .child-selector { margin-bottom: 16px; background: #e2e8f0; padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9rem; }
@@ -73,9 +64,8 @@
     .item-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
     .item-card { border-left: 4px solid #2563eb; background: #f8fafc; padding: 12px; border-radius: 0 8px 8px 0; }
     .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .item-title { font-weight: bold; font-size: 0.95rem; color: #0f172a; }
+    .item-title { font-weight: bold; font-size: 0.95rem; }
     .item-date { font-size: 0.75rem; color: #64748b; }
-    .item-desc { font-size: 0.85rem; color: #334155; line-height: 1.4; }
 
     .form-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
     .btn-action { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; }
@@ -83,27 +73,27 @@
 </head>
 <body>
 
-  <!-- PAGE DE CONNEXION -->
+  <!-- CONNEXION -->
   <div id="login-page" class="login-container">
     <div class="login-card">
       <h1>PRONOTE</h1>
-      <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px">Espace Mobile Synchronisé</p>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px">Connexion par rôle</p>
       
       <div class="form-group">
-        <label>Compte & Rôle</label>
+        <label>Compte & Profil</label>
         <select id="user-type" class="form-control">
           <optgroup label="Élèves & Parents">
             <option value="eleve">Espace Élève (Thomas / Emma)</option>
             <option value="parent">Espace Parents</option>
           </optgroup>
           <optgroup label="Professeurs">
-            <option value="prof_martin">M. Martin (Professeur de Maths)</option>
-            <option value="prof_dupont">Mme. Dupont (Professeure de Français)</option>
-            <option value="prof_bernard">M. Bernard (Professeur d'Histoire)</option>
+            <option value="prof_martin">M. Martin (Prof. Maths)</option>
+            <option value="prof_dupont">Mme. Dupont (Prof. Français)</option>
+            <option value="prof_bernard">M. Bernard (Prof. Histoire)</option>
           </optgroup>
-          <optgroup label="Administration">
+          <optgroup label="Vie Scolaire & Admin">
+            <option value="admin_cpe">Bureau Vie Scolaire (CPE)</option>
             <option value="admin_sec">Secrétariat du collège</option>
-            <option value="admin_cpe">Bureau de la Vie Scolaire (CPE)</option>
             <option value="admin_dir">Direction de l'établissement</option>
           </optgroup>
         </select>
@@ -111,14 +101,10 @@
 
       <div class="form-group">
         <label>Identifiant</label>
-        <input type="text" id="username" placeholder="Saisissez : demo">
+        <input type="text" id="username" class="form-control" placeholder="Saisissez : demo">
       </div>
 
       <button class="btn-submit" onclick="handleLogin()">Se connecter</button>
-
-      <div class="demo-info">
-        <strong>Identifiant universel de test :</strong> <code>demo</code>
-      </div>
     </div>
   </div>
 
@@ -137,7 +123,7 @@
 
       <main>
         <div id="parent-controls" class="child-selector" style="display:none">
-          <span><strong>Enfant :</strong></span>
+          <span><strong>Élève suivi :</strong></span>
           <select id="child-select" class="form-control" style="width:auto; padding:6px" onchange="changeStudent(this.value)">
             <option value="thomas">Thomas DUBOIS (3e B)</option>
             <option value="emma">Emma DUBOIS (5e A)</option>
@@ -148,14 +134,14 @@
         <section id="dashboard" class="tab-content">
           <h2 id="dash-title" style="font-size:1.3rem; margin-bottom:12px">Accueil</h2>
           <div class="card">
-            <h3 style="font-size:1rem; margin-bottom:6px">📢 Informations établissement</h3>
-            <p style="color:#475569; font-size:0.85rem; line-height:1.4">Connecté en tant que <strong id="user-display-name"></strong>. Les modifications apportées seront immédiatement synchronisées.</p>
+            <h3 style="font-size:1rem; margin-bottom:6px">📢 Connecté : <span id="user-display-name"></span></h3>
+            <p style="color:#475569; font-size:0.85rem">Base de données interactive connectée en temps réel.</p>
           </div>
         </section>
 
-        <!-- NOTES -->
+        <!-- CONSULTATION NOTES (ÉLÈVE, PARENT, VIE SCOLAIRE) -->
         <section id="grades" class="tab-content">
-          <h2 style="font-size:1.3rem; margin-bottom:12px">Relevé de notes</h2>
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Relevé de notes <span id="read-only-badge" style="display:none" class="badge bg-green">Lecture Seule</span></h2>
           <div class="card">
             <div class="table-container">
               <table>
@@ -168,9 +154,9 @@
           </div>
         </section>
 
-        <!-- DEVOIRS -->
+        <!-- CAHIER DE TEXTES -->
         <section id="homework" class="tab-content">
-          <h2 style="font-size:1.3rem; margin-bottom:12px">Cahier de textes / Devoirs</h2>
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Cahier de textes</h2>
           <div class="card">
             <h3 style="font-size:1rem">Devoirs à faire</h3>
             <div id="homework-list" class="item-list"></div>
@@ -190,6 +176,24 @@
               <div style="font-size:0.8rem">Retard(s)</div>
             </div>
           </div>
+          
+          <!-- FORMULAIRE SAISIE ABSENCE (RESERVÉ VIE SCOLAIRE) -->
+          <div id="viesco-add-panel" class="card" style="display:none">
+            <h3 style="font-size:1rem; margin-bottom:10px">🚨 Signaler Absence / Retard</h3>
+            <form class="form-stack" onsubmit="addIncident(event)">
+              <select id="viesco-student" class="form-control">
+                <option value="thomas">Thomas DUBOIS (3e B)</option>
+                <option value="emma">Emma DUBOIS (5e A)</option>
+              </select>
+              <select id="viesco-type" class="form-control">
+                <option value="Absence">Absence</option>
+                <option value="Retard">Retard</option>
+              </select>
+              <input type="text" id="viesco-motif" class="form-control" placeholder="Motif ou cours concerné" required>
+              <button type="submit" class="btn-action" style="background:#ef4444">Enregistrer le signalement</button>
+            </form>
+          </div>
+
           <div class="card">
             <h3 style="font-size:1rem">Historique</h3>
             <div class="table-container">
@@ -203,42 +207,45 @@
           </div>
         </section>
 
-        <!-- CONTACT -->
+        <!-- MESSAGERIE -->
         <section id="contact" class="tab-content">
-          <h2 style="font-size:1.3rem; margin-bottom:12px">Messagerie & Contact</h2>
-          <div class="card">
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Messagerie</h2>
+          
+          <!-- FORMULAIRE ENVOI (PARENTS) -->
+          <div id="parent-msg-panel" class="card" style="display:none">
             <h3 style="font-size:1rem; margin-bottom:10px">✉️ Envoyer un message</h3>
             <form class="form-stack" onsubmit="sendMessage(event)">
               <select id="msg-recipient" class="form-control" required>
                 <optgroup label="Professeurs">
-                  <option value="M. Martin (Professeur de Maths)">M. Martin (Professeur de Maths)</option>
-                  <option value="Mme. Dupont (Professeure de Français)">Mme. Dupont (Professeure de Français)</option>
-                  <option value="M. Bernard (Professeur d'Histoire)">M. Bernard (Professeur d'Histoire)</option>
+                  <option value="M. Martin (Prof. Maths)">M. Martin (Professeur de Maths)</option>
+                  <option value="Mme. Dupont (Prof. Français)">Mme. Dupont (Professeure de Français)</option>
+                  <option value="M. Bernard (Prof. Histoire)">M. Bernard (Professeur d'Histoire)</option>
                 </optgroup>
                 <optgroup label="Administration">
+                  <option value="Bureau Vie Scolaire (CPE)">Bureau Vie Scolaire (CPE)</option>
                   <option value="Secrétariat du collège">Secrétariat du collège</option>
-                  <option value="Bureau de la Vie Scolaire (CPE)">Bureau de la Vie Scolaire (CPE)</option>
                   <option value="Direction de l'établissement">Direction de l'établissement</option>
                 </optgroup>
               </select>
-              <input type="text" id="msg-subject" class="form-control" placeholder="Sujet du message" required>
+              <input type="text" id="msg-subject" class="form-control" placeholder="Sujet" required>
               <textarea id="msg-body" class="form-control" rows="3" placeholder="Votre message..." required></textarea>
-              <button type="submit" class="btn-action">Envoyer le message</button>
+              <button type="submit" class="btn-action">Envoyer</button>
             </form>
           </div>
 
+          <!-- LISTE DES MESSAGES & RÉPONSES (ADMIN/VIE SCO/PROFS) -->
           <div class="card">
-            <h3 style="font-size:1rem">Messages envoyés</h3>
+            <h3 style="font-size:1rem">Boîte de réception & Échanges</h3>
             <div id="messages-list" class="item-list"></div>
           </div>
         </section>
 
-        <!-- OUTILS PROF / ADMIN (ÉDITION & GESTION) -->
+        <!-- ESPACE PROFESSEUR (NOTES & DEVOIRS UNIQUEMENT) -->
         <section id="prof-tools" class="tab-content">
-          <h2 style="font-size:1.3rem; margin-bottom:12px">Gestion & Édition</h2>
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Outils Enseignant</h2>
           
           <div class="card">
-            <h3 style="font-size:1rem; margin-bottom:10px">📝 Saisir / Ajouter une Note</h3>
+            <h3 style="font-size:1rem; margin-bottom:10px">📝 Saisir / Publier une Note</h3>
             <form class="form-stack" onsubmit="profAddGrade(event)">
               <select id="prof-student-grade" class="form-control">
                 <option value="thomas">Thomas DUBOIS (3e B)</option>
@@ -247,15 +254,14 @@
               <input type="text" id="prof-subject" class="form-control" placeholder="Matière" required>
               <input type="text" id="prof-title" class="form-control" placeholder="Titre du devoir" required>
               <input type="number" step="0.5" min="0" max="20" id="prof-note" class="form-control" placeholder="Note /20" required>
-              <button type="submit" class="btn-action">Publier la note</button>
+              <button type="submit" class="btn-action">Ajouter la note</button>
             </form>
           </div>
 
-          <!-- ÉDITION / SUPPRESSION DES NOTES -->
           <div class="card">
-            <h3 style="font-size:1rem; margin-bottom:10px">✏️ Éditer ou Supprimer les Notes</h3>
+            <h3 style="font-size:1rem; margin-bottom:10px">✏️ Modifier / Supprimer des Notes</h3>
             <div class="child-selector">
-              <span>Élève à modifier :</span>
+              <span>Élève :</span>
               <select id="edit-student-select" class="form-control" style="width:auto" onchange="renderProfEditGrades()">
                 <option value="thomas">Thomas DUBOIS</option>
                 <option value="emma">Emma DUBOIS</option>
@@ -272,7 +278,7 @@
           </div>
 
           <div class="card">
-            <h3 style="font-size:1rem; margin-bottom:10px">📚 Donner un Devoir</h3>
+            <h3 style="font-size:1rem; margin-bottom:10px">📚 Ajouter un Devoir</h3>
             <form class="form-stack" onsubmit="profAddHomework(event)">
               <select id="prof-student-hw" class="form-control">
                 <option value="thomas">Thomas DUBOIS (3e B)</option>
@@ -280,8 +286,8 @@
               </select>
               <input type="text" id="prof-hw-subject" class="form-control" placeholder="Matière" required>
               <input type="date" id="prof-hw-date" class="form-control" required>
-              <textarea id="prof-hw-desc" class="form-control" rows="2" placeholder="Travail à faire..." required></textarea>
-              <button type="submit" class="btn-action" style="background:#2563eb">Ajouter le devoir</button>
+              <textarea id="prof-hw-desc" class="form-control" rows="2" placeholder="Consigne du devoir..." required></textarea>
+              <button type="submit" class="btn-action" style="background:#2563eb">Publier le devoir</button>
             </form>
           </div>
         </section>
@@ -290,11 +296,9 @@
     </div>
   </div>
 
-  <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAm2zDmRYPdEx8dtmtsa3Vp9ALrAdcxiKI",
@@ -307,21 +311,17 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    window.currentSession = { role: null, name: '', activeStudent: 'thomas' };
+    window.currentSession = { role: null, typeKey: '', name: '', activeStudent: 'thomas' };
     window.dbData = {};
 
     function getDefaultStudentData(studentId) {
       return {
         name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
         class: studentId === 'thomas' ? "3ème B" : "5ème A",
-        grades: [
-          { sub: "Maths", title: "Contrôle 1", val: 15 },
-          { sub: "Français", title: "Rédaction", val: 14 }
-        ],
-        homework: [{ sub: "Français", date: "Demain", desc: "Lire le chapitre 3 du roman." }],
+        grades: [{ sub: "Maths", title: "Contrôle 1", val: 15 }],
+        homework: [{ sub: "Français", date: "Demain", desc: "Chapitre 3 à lire." }],
         incidents: [],
         messages: []
       };
@@ -345,26 +345,18 @@
     listenToStudentData('emma');
 
     window.handleLogin = function() {
-      const accountVal = document.getElementById('user-type').value;
+      const typeVal = document.getElementById('user-type').value;
       const username = document.getElementById('username').value.trim().toLowerCase();
 
       if (username === 'demo' || username === 'eleve' || username === 'parent' || username === 'prof') {
         let role = 'eleve';
-        let name = 'Élève';
+        let name = document.getElementById('user-type').options[document.getElementById('user-type').selectedIndex].text;
 
-        if (accountVal.startsWith('prof_')) {
-          role = 'prof';
-          name = document.getElementById('user-type').options[document.getElementById('user-type').selectedIndex].text;
-        } else if (accountVal.startsWith('admin_')) {
-          role = 'prof'; // Accès gestion
-          name = document.getElementById('user-type').options[document.getElementById('user-type').selectedIndex].text;
-        } else if (accountVal === 'parent') {
-          role = 'parent';
-          name = 'Parent d\'élève';
-        }
+        if (typeVal.startsWith('prof_')) role = 'prof';
+        else if (typeVal.startsWith('admin_')) role = 'admin';
+        else if (typeVal === 'parent') role = 'parent';
 
-        window.currentSession.role = role;
-        window.currentSession.name = name;
+        window.currentSession = { role: role, typeKey: typeVal, name: name, activeStudent: 'thomas' };
 
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
@@ -372,26 +364,23 @@
         configureInterfaceForRole();
         updateUI();
       } else {
-        alert("Identifiant incorrect. Saisissez 'demo'.");
+        alert("Identifiant incorrect. Utilisez : demo");
       }
     };
 
-    // TOUT EFFACER & REINITIALISER À LA DÉCONNEXION
     window.handleLogout = async function() {
-      if (confirm("Se déconnecter et réinitialiser toutes les données ?")) {
-        // Remise à zéro dans Firebase
+      if (confirm("Réinitialiser et déconnecter ?")) {
         await setDoc(doc(db, "students", "thomas"), getDefaultStudentData('thomas'));
         await setDoc(doc(db, "students", "emma"), getDefaultStudentData('emma'));
         location.reload();
       }
     };
 
-    // Professeur : Ajouter Note
+    // PROF: Ajouter/Editer Note & Devoirs
     window.profAddGrade = async function(e) {
       e.preventDefault();
       const stId = document.getElementById('prof-student-grade').value;
-      const studentRef = doc(db, "students", stId);
-      await updateDoc(studentRef, {
+      await updateDoc(doc(db, "students", stId), {
         grades: arrayUnion({
           sub: document.getElementById('prof-subject').value,
           title: document.getElementById('prof-title').value,
@@ -402,11 +391,8 @@
       e.target.reset();
     };
 
-    // Professeur : Éditer Note
     window.editGrade = async function(stId, index) {
       const student = window.dbData[stId];
-      if (!student || !student.grades[index]) return;
-
       const current = student.grades[index];
       const newSub = prompt("Matière :", current.sub);
       const newTitle = prompt("Titre :", current.title);
@@ -415,15 +401,12 @@
       if (newSub && newTitle && !isNaN(parseFloat(newVal))) {
         const updatedGrades = [...student.grades];
         updatedGrades[index] = { sub: newSub, title: newTitle, val: parseFloat(newVal) };
-        
         await updateDoc(doc(db, "students", stId), { grades: updatedGrades });
-        alert("Note modifiée !");
       }
     };
 
-    // Professeur : Supprimer Note
     window.deleteGrade = async function(stId, index) {
-      if (confirm("Voulez-vous supprimer cette note ?")) {
+      if (confirm("Supprimer cette note ?")) {
         const student = window.dbData[stId];
         const updatedGrades = student.grades.filter((_, i) => i !== index);
         await updateDoc(doc(db, "students", stId), { grades: updatedGrades });
@@ -432,37 +415,72 @@
 
     window.profAddHomework = async function(e) {
       e.preventDefault();
-      const studentRef = doc(db, "students", document.getElementById('prof-student-hw').value);
-      await updateDoc(studentRef, {
+      const stId = document.getElementById('prof-student-hw').value;
+      await updateDoc(doc(db, "students", stId), {
         homework: arrayUnion({
           sub: document.getElementById('prof-hw-subject').value,
           date: document.getElementById('prof-hw-date').value,
           desc: document.getElementById('prof-hw-desc').value
         })
       });
-      alert("Devoir ajouté !");
+      alert("Devoir publié !");
       e.target.reset();
     };
 
+    // VIE SCOLAIRE: Ajouter incident
+    window.addIncident = async function(e) {
+      e.preventDefault();
+      const stId = document.getElementById('viesco-student').value;
+      await updateDoc(doc(db, "students", stId), {
+        incidents: arrayUnion({
+          date: new Date().toLocaleDateString('fr-FR'),
+          type: document.getElementById('viesco-type').value,
+          motif: document.getElementById('viesco-motif').value
+        })
+      });
+      alert("Incident enregistré par la Vie Scolaire !");
+      e.target.reset();
+    };
+
+    // MESSAGERIE & RÉPONSES
     window.sendMessage = async function(e) {
       e.preventDefault();
-      const studentRef = doc(db, "students", window.currentSession.activeStudent);
-      await updateDoc(studentRef, {
+      const stId = window.currentSession.activeStudent;
+      await updateDoc(doc(db, "students", stId), {
         messages: arrayUnion({
+          id: Date.now(),
           recipient: document.getElementById('msg-recipient').value,
           subject: document.getElementById('msg-subject').value,
           body: document.getElementById('msg-body').value,
-          date: new Date().toLocaleDateString('fr-FR')
+          date: new Date().toLocaleDateString('fr-FR'),
+          replies: []
         })
       });
       alert("Message envoyé !");
       e.target.reset();
     };
 
+    window.replyMessage = async function(stId, msgId) {
+      const replyText = prompt("Votre réponse :");
+      if (!replyText) return;
+
+      const student = window.dbData[stId];
+      const updatedMessages = student.messages.map(m => {
+        if (m.id === msgId) {
+          return {
+            ...m,
+            replies: [...(m.replies || []), { author: window.currentSession.name, text: replyText, date: "Aujourd'hui" }]
+          };
+        }
+        return m;
+      });
+
+      await updateDoc(doc(db, "students", stId), { messages: updatedMessages });
+    };
+
     window.switchTab = function(tabId, btnElement) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      
       const target = document.getElementById(tabId);
       if(target) target.classList.add('active');
       if(btnElement) btnElement.classList.add('active');
@@ -477,36 +495,50 @@
       const nav = document.getElementById('sidebar-nav');
       const roleTag = document.getElementById('role-tag');
       const parentControls = document.getElementById('parent-controls');
+      const viescoPanel = document.getElementById('viesco-add-panel');
+      const parentMsgPanel = document.getElementById('parent-msg-panel');
+      const readOnlyBadge = document.getElementById('read-only-badge');
 
       nav.innerHTML = '';
       parentControls.style.display = 'none';
+      viescoPanel.style.display = 'none';
+      parentMsgPanel.style.display = 'none';
+      readOnlyBadge.style.display = 'none';
 
-      if (window.currentSession.role === 'prof') {
-        roleTag.innerText = `(${window.currentSession.name})`;
+      const r = window.currentSession.role;
+      const k = window.currentSession.typeKey;
+
+      roleTag.innerText = `(${window.currentSession.name})`;
+
+      if (r === 'prof') {
         nav.innerHTML = `
-          <button class="active" onclick="switchTab('prof-tools', this)"><span>📝</span> Gestion Notes / Devoirs</button>
+          <button class="active" onclick="switchTab('prof-tools', this)"><span>📝</span> Professeur</button>
+          <button onclick="switchTab('contact', this)"><span>✉️</span> Messagerie</button>
         `;
         switchTab('prof-tools');
+      } else if (r === 'admin') {
+        parentControls.style.display = 'flex';
+        readOnlyBadge.style.display = 'inline-block';
+        if (k === 'admin_cpe') viescoPanel.style.display = 'block';
+
+        nav.innerHTML = `
+          <button class="active" onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
+          <button onclick="switchTab('grades', this)"><span>📊</span> Notes (Lecture)</button>
+          <button onclick="switchTab('contact', this)"><span>✉️</span> Réponses Messages</button>
+        `;
+        switchTab('viesco');
       } else {
-        if (window.currentSession.role === 'parent') {
-          roleTag.innerText = "(Espace Parent)";
+        if (r === 'parent') {
           parentControls.style.display = 'flex';
-          nav.innerHTML = `
-            <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
-            <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
-            <button onclick="switchTab('homework', this)"><span>📚</span> Devoirs</button>
-            <button onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
-            <button onclick="switchTab('contact', this)"><span>✉️</span> Contact</button>
-          `;
-        } else {
-          roleTag.innerText = "(Espace Élève)";
-          nav.innerHTML = `
-            <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
-            <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
-            <button onclick="switchTab('homework', this)"><span>📚</span> Devoirs</button>
-            <button onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
-          `;
+          parentMsgPanel.style.display = 'block';
         }
+        nav.innerHTML = `
+          <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
+          <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
+          <button onclick="switchTab('homework', this)"><span>📚</span> Devoirs</button>
+          <button onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
+          <button onclick="switchTab('contact', this)"><span>✉️</span> Messagerie</button>
+        `;
         switchTab('dashboard');
       }
     }
@@ -517,7 +549,7 @@
       const tbody = document.getElementById('prof-edit-grades-body');
 
       if (!student || !student.grades || student.grades.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Aucune note saisie.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Aucune note.</td></tr>';
         return;
       }
 
@@ -527,7 +559,7 @@
           <td>${g.title}</td>
           <td><span class="badge bg-blue">${g.val}/20</span></td>
           <td>
-            <button class="btn-edit" onclick="editGrade('${stId}', ${i})">✏️ Éditer</button>
+            <button class="btn-edit" onclick="editGrade('${stId}', ${i})">✏️</button>
             <button class="btn-del" onclick="deleteGrade('${stId}', ${i})">🗑️</button>
           </td>
         </tr>
@@ -535,70 +567,47 @@
     };
 
     function updateUI() {
-      document.getElementById('user-display-name').innerText = window.currentSession.name || 'Utilisateur';
+      document.getElementById('user-display-name').innerText = window.currentSession.name;
 
-      if (window.currentSession.role === 'prof') {
-        renderProfEditGrades();
-        return;
-      }
+      if (window.currentSession.role === 'prof') renderProfEditGrades();
 
       const student = window.dbData[window.currentSession.activeStudent];
       if (!student) return;
 
-      document.getElementById('dash-title').innerText = `Bonjour, ${student.name}`;
+      document.getElementById('dash-title').innerText = `Espace : ${student.name}`;
 
-      // Tables notes
-      const gBody = document.getElementById('grades-table-body');
-      gBody.innerHTML = (student.grades || []).map(g => `
-        <tr>
-          <td><strong>${g.sub}</strong></td>
-          <td>${g.title}</td>
-          <td><span class="badge bg-blue">${g.val} / 20</span></td>
-        </tr>
+      // Notes
+      document.getElementById('grades-table-body').innerHTML = (student.grades || []).map(g => `
+        <tr><td><strong>${g.sub}</strong></td><td>${g.title}</td><td><span class="badge bg-blue">${g.val}/20</span></td></tr>
       `).join('');
 
       // Devoirs
-      const hwList = document.getElementById('homework-list');
-      if(!student.homework || student.homework.length === 0) {
-        hwList.innerHTML = '<p style="color:#64748b; font-size:0.85rem">Aucun devoir à faire.</p>';
-      } else {
-        hwList.innerHTML = student.homework.map(h => `
-          <div class="item-card">
-            <div class="item-header">
-              <span class="item-title">${h.sub}</span>
-              <span class="item-date">Pour le : ${h.date}</span>
-            </div>
-            <div class="item-desc">${h.desc}</div>
-          </div>
-        `).join('');
-      }
+      document.getElementById('homework-list').innerHTML = (!student.homework || student.homework.length === 0)
+        ? '<p style="color:#64748b; font-size:0.85rem">Aucun devoir.</p>'
+        : student.homework.map(h => `<div class="item-card"><div class="item-header"><span class="item-title">${h.sub}</span><span class="item-date">${h.date}</span></div><div>${h.desc}</div></div>`).join('');
 
       // Vie Sco
       document.getElementById('count-absences').innerText = (student.incidents || []).filter(i => i.type === 'Absence').length;
       document.getElementById('count-retards').innerText = (student.incidents || []).filter(i => i.type === 'Retard').length;
-
-      const iBody = document.getElementById('incidents-table-body');
-      iBody.innerHTML = (!student.incidents || student.incidents.length === 0) 
-        ? '<tr><td colspan="3" style="text-align:center; color:#94a3b8">Rien à signaler.</td></tr>'
+      document.getElementById('incidents-table-body').innerHTML = (!student.incidents || student.incidents.length === 0)
+        ? '<tr><td colspan="3" style="text-align:center">Aucun incident.</td></tr>'
         : student.incidents.map(i => `<tr><td>${i.date}</td><td><strong>${i.type}</strong></td><td>${i.motif}</td></tr>`).join('');
 
-      // Messages
-      if (window.currentSession.role === 'parent') {
-        const msgList = document.getElementById('messages-list');
-        if(!student.messages || student.messages.length === 0) {
-          msgList.innerHTML = '<p style="color:#64748b; font-size:0.85rem">Aucun message envoyé.</p>';
-        } else {
-          msgList.innerHTML = student.messages.map(m => `
-            <div class="item-card" style="border-left-color:#10b981">
-              <div class="item-header">
-                <span class="item-title">À : ${m.recipient}</span>
-                <span class="item-date">${m.date}</span>
-              </div>
-              <div style="font-weight:600; font-size:0.85rem; margin-bottom:4px">${m.subject}</div>
-              <div class="item-desc">${m.body}</div>
-            </div>
-          `).join('');
-        }
+      // Messages & Réponses
+      const msgList = document.getElementById('messages-list');
+      const stId = window.currentSession.activeStudent;
+      if (!student.messages || student.messages.length === 0) {
+        msgList.innerHTML = '<p style="color:#64748b; font-size:0.85rem">Aucun message.</p>';
+      } else {
+        msgList.innerHTML = student.messages.map(m => `
+          <div class="item-card" style="border-left-color:#10b981">
+            <div class="item-header"><span class="item-title">À : ${m.recipient}</span><span class="item-date">${m.date}</span></div>
+            <div style="font-weight:600">${m.subject}</div>
+            <div style="margin-top:4px">${m.body}</div>
+            ${(m.replies || []).map(r => `<div style="background:#e2e8f0; padding:6px; margin-top:6px; border-radius:4px; font-size:0.8rem"><strong>${r.author}:</strong> ${r.text}</div>`).join('')}
+            ${(window.currentSession.role === 'admin' || window.currentSession.role === 'prof') ? `<button onclick="replyMessage('${stId}', ${m.id})" class="btn-edit" style="margin-top:8px">💬 Répondre</button>` : ''}
+          </div>
+        `).join('');
       }
     }
   </script>
