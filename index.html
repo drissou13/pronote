@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Notepro</title>
+  <title>PRONOTE Mobile & Firebase</title>
   <style>
     /* --- RESET & VARIABLES --- */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,7 @@
     .login-card h1 { color: #1e3a8a; margin-bottom: 4px; font-size: 1.8rem; }
     .form-group { margin-bottom: 14px; text-align: left; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
-    .form-group input, .form-group select, .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background: #fff; }
+    .form-group input, .form-group select, .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: #fff; }
     .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
     .btn-submit:active { background: #1d4ed8; }
     .demo-info { margin-top: 16px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.8rem; color: #64748b; text-align: left; line-height: 1.4; }
@@ -29,14 +29,12 @@
     
     .app-body { display: flex; flex: 1; flex-direction: column; }
     
-    /* Navigation du bas sur Mobile / Barre latérale sur Desktop */
     nav { background: #0f172a; display: flex; overflow-x: auto; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
     nav button { background: none; border: none; color: #94a3b8; padding: 12px 8px; flex: 1; min-width: 70px; text-align: center; cursor: pointer; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; white-space: nowrap; }
     nav button.active { color: white; background: #1e293b; font-weight: bold; border-top: 3px solid #3b82f6; }
     
     main { flex: 1; padding: 16px; padding-bottom: 80px; max-width: 900px; margin: 0 auto; width: 100%; }
 
-    /* Adapte la navigation pour tablette/ordinateur */
     @media (min-width: 768px) {
       .app-body { flex-direction: row; }
       nav { position: static; width: 220px; flex-direction: column; overflow-x: visible; box-shadow: none; }
@@ -45,7 +43,7 @@
       main { padding-bottom: 24px; }
     }
 
-    /* --- COMPOSANTS UI MOBILE --- */
+    /* --- UI COMPONENT --- */
     .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -56,7 +54,6 @@
     .stat-retards { background: #f59e0b; }
     .stat-value { font-size: 1.8rem; font-weight: bold; }
 
-    /* Tables adaptées sur Mobile */
     .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.9rem; }
     th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
@@ -68,9 +65,11 @@
     .bg-orange { background: #f59e0b; }
     .bg-blue { background: #3b82f6; }
 
+    .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; margin-right: 4px; }
+    .btn-del { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+
     .child-selector { margin-bottom: 16px; background: #e2e8f0; padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9rem; }
     
-    /* Listes stylisées pour Devoirs et Messages */
     .item-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
     .item-card { border-left: 4px solid #2563eb; background: #f8fafc; padding: 12px; border-radius: 0 8px 8px 0; }
     .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
@@ -91,26 +90,34 @@
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px">Espace Mobile Synchronisé</p>
       
       <div class="form-group">
-        <label>Espace de connexion</label>
-        <select id="user-type">
-          <option value="eleve">Espace Élève</option>
-          <option value="parent">Espace Parents</option>
-          <option value="prof">Espace Professeur</option>
+        <label>Compte & Rôle</label>
+        <select id="user-type" class="form-control">
+          <optgroup label="Élèves & Parents">
+            <option value="eleve">Espace Élève (Thomas / Emma)</option>
+            <option value="parent">Espace Parents</option>
+          </optgroup>
+          <optgroup label="Professeurs">
+            <option value="prof_martin">M. Martin (Professeur de Maths)</option>
+            <option value="prof_dupont">Mme. Dupont (Professeure de Français)</option>
+            <option value="prof_bernard">M. Bernard (Professeur d'Histoire)</option>
+          </optgroup>
+          <optgroup label="Administration">
+            <option value="admin_sec">Secrétariat du collège</option>
+            <option value="admin_cpe">Bureau de la Vie Scolaire (CPE)</option>
+            <option value="admin_dir">Direction de l'établissement</option>
+          </optgroup>
         </select>
       </div>
 
       <div class="form-group">
         <label>Identifiant</label>
-        <input type="text" id="username" placeholder="eleve, parent ou prof">
+        <input type="text" id="username" placeholder="Saisissez : demo">
       </div>
 
       <button class="btn-submit" onclick="handleLogin()">Se connecter</button>
 
       <div class="demo-info">
-        <strong>Identifiants de démo :</strong><br>
-        • Élève : <code>eleve</code><br>
-        • Parent : <code>parent</code><br>
-        • Prof : <code>prof</code>
+        <strong>Identifiant universel de test :</strong> <code>demo</code>
       </div>
     </div>
   </div>
@@ -122,11 +129,10 @@
         <span class="sync-status"></span>
         PRONOTE <span id="role-tag" style="font-size:0.75rem; opacity:0.8; font-weight:normal"></span>
       </div>
-      <button onclick="location.reload()" style="background:rgba(255,255,255,0.15); border:none; color:white; padding:6px 12px; border-radius:6px; font-size:0.8rem">Sortir</button>
+      <button onclick="handleLogout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:6px 12px; border-radius:6px; font-size:0.8rem; cursor:pointer">Sortir (Effacer tout)</button>
     </header>
 
     <div class="app-body">
-      <!-- Navigation (Bas sur mobile, Gauche sur écran large) -->
       <nav id="sidebar-nav"></nav>
 
       <main>
@@ -143,7 +149,7 @@
           <h2 id="dash-title" style="font-size:1.3rem; margin-bottom:12px">Accueil</h2>
           <div class="card">
             <h3 style="font-size:1rem; margin-bottom:6px">📢 Informations établissement</h3>
-            <p style="color:#475569; font-size:0.85rem; line-height:1.4">Bienvenue sur l'application mobile PRONOTE. Vos notes, devoirs et messages sont synchronisés en temps réel.</p>
+            <p style="color:#475569; font-size:0.85rem; line-height:1.4">Connecté en tant que <strong id="user-display-name"></strong>. Les modifications apportées seront immédiatement synchronisées.</p>
           </div>
         </section>
 
@@ -162,7 +168,7 @@
           </div>
         </section>
 
-        <!-- DEVOIRS (NOUVEAU) -->
+        <!-- DEVOIRS -->
         <section id="homework" class="tab-content">
           <h2 style="font-size:1.3rem; margin-bottom:12px">Cahier de textes / Devoirs</h2>
           <div class="card">
@@ -197,23 +203,22 @@
           </div>
         </section>
 
-        <!-- CONTACT / MESSAGERIE (NOUVEAU - PARENTS) -->
+        <!-- CONTACT -->
         <section id="contact" class="tab-content">
           <h2 style="font-size:1.3rem; margin-bottom:12px">Messagerie & Contact</h2>
-          
           <div class="card">
             <h3 style="font-size:1rem; margin-bottom:10px">✉️ Envoyer un message</h3>
             <form class="form-stack" onsubmit="sendMessage(event)">
               <select id="msg-recipient" class="form-control" required>
                 <optgroup label="Professeurs">
-                  <option value="Prof. Maths">M. Martin (Professeur de Maths)</option>
-                  <option value="Prof. Français">Mme. Dupont (Professeure de Français)</option>
-                  <option value="Prof. Histoire">M. Bernard (Professeur d'Histoire)</option>
+                  <option value="M. Martin (Professeur de Maths)">M. Martin (Professeur de Maths)</option>
+                  <option value="Mme. Dupont (Professeure de Français)">Mme. Dupont (Professeure de Français)</option>
+                  <option value="M. Bernard (Professeur d'Histoire)">M. Bernard (Professeur d'Histoire)</option>
                 </optgroup>
                 <optgroup label="Administration">
-                  <option value="Secrétariat">Secrétariat du collège</option>
-                  <option value="Vie Scolaire">Bureau de la Vie Scolaire (CPE)</option>
-                  <option value="Direction">Direction de l'établissement</option>
+                  <option value="Secrétariat du collège">Secrétariat du collège</option>
+                  <option value="Bureau de la Vie Scolaire (CPE)">Bureau de la Vie Scolaire (CPE)</option>
+                  <option value="Direction de l'établissement">Direction de l'établissement</option>
                 </optgroup>
               </select>
               <input type="text" id="msg-subject" class="form-control" placeholder="Sujet du message" required>
@@ -228,12 +233,12 @@
           </div>
         </section>
 
-        <!-- ESPACE PROF : NOTES & DEVOIRS -->
+        <!-- OUTILS PROF / ADMIN (ÉDITION & GESTION) -->
         <section id="prof-tools" class="tab-content">
-          <h2 style="font-size:1.3rem; margin-bottom:12px">Saisie Professeur</h2>
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Gestion & Édition</h2>
           
           <div class="card">
-            <h3 style="font-size:1rem; margin-bottom:10px">📝 Saisir une Note</h3>
+            <h3 style="font-size:1rem; margin-bottom:10px">📝 Saisir / Ajouter une Note</h3>
             <form class="form-stack" onsubmit="profAddGrade(event)">
               <select id="prof-student-grade" class="form-control">
                 <option value="thomas">Thomas DUBOIS (3e B)</option>
@@ -244,6 +249,26 @@
               <input type="number" step="0.5" min="0" max="20" id="prof-note" class="form-control" placeholder="Note /20" required>
               <button type="submit" class="btn-action">Publier la note</button>
             </form>
+          </div>
+
+          <!-- ÉDITION / SUPPRESSION DES NOTES -->
+          <div class="card">
+            <h3 style="font-size:1rem; margin-bottom:10px">✏️ Éditer ou Supprimer les Notes</h3>
+            <div class="child-selector">
+              <span>Élève à modifier :</span>
+              <select id="edit-student-select" class="form-control" style="width:auto" onchange="renderProfEditGrades()">
+                <option value="thomas">Thomas DUBOIS</option>
+                <option value="emma">Emma DUBOIS</option>
+              </select>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Matière</th><th>Titre</th><th>Note</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="prof-edit-grades-body"></tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card">
@@ -269,7 +294,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAm2zDmRYPdEx8dtmtsa3Vp9ALrAdcxiKI",
@@ -285,24 +310,30 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    window.currentSession = { role: null, activeStudent: 'thomas' };
+    window.currentSession = { role: null, name: '', activeStudent: 'thomas' };
     window.dbData = {};
+
+    function getDefaultStudentData(studentId) {
+      return {
+        name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
+        class: studentId === 'thomas' ? "3ème B" : "5ème A",
+        grades: [
+          { sub: "Maths", title: "Contrôle 1", val: 15 },
+          { sub: "Français", title: "Rédaction", val: 14 }
+        ],
+        homework: [{ sub: "Français", date: "Demain", desc: "Lire le chapitre 3 du roman." }],
+        incidents: [],
+        messages: []
+      };
+    }
 
     function listenToStudentData(studentId) {
       const studentRef = doc(db, "students", studentId);
-      
       onSnapshot(studentRef, (docSnap) => {
         if (docSnap.exists()) {
           window.dbData[studentId] = docSnap.data();
         } else {
-          const defaultData = {
-            name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
-            class: studentId === 'thomas' ? "3ème B" : "5ème A",
-            grades: [{ sub: "Maths", title: "Contrôle 1", val: 15 }],
-            homework: [{ sub: "Français", date: "Demain", desc: "Lire le chapitre 3 du roman." }],
-            incidents: [],
-            messages: []
-          };
+          const defaultData = getDefaultStudentData(studentId);
           setDoc(studentRef, defaultData);
           window.dbData[studentId] = defaultData;
         }
@@ -314,28 +345,52 @@
     listenToStudentData('emma');
 
     window.handleLogin = function() {
-      const type = document.getElementById('user-type').value;
+      const accountVal = document.getElementById('user-type').value;
       const username = document.getElementById('username').value.trim().toLowerCase();
 
-      if ((type === 'eleve' && username === 'eleve') ||
-          (type === 'parent' && username === 'parent') ||
-          (type === 'prof' && username === 'prof')) {
-        
-        window.currentSession.role = type;
+      if (username === 'demo' || username === 'eleve' || username === 'parent' || username === 'prof') {
+        let role = 'eleve';
+        let name = 'Élève';
+
+        if (accountVal.startsWith('prof_')) {
+          role = 'prof';
+          name = document.getElementById('user-type').options[document.getElementById('user-type').selectedIndex].text;
+        } else if (accountVal.startsWith('admin_')) {
+          role = 'prof'; // Accès gestion
+          name = document.getElementById('user-type').options[document.getElementById('user-type').selectedIndex].text;
+        } else if (accountVal === 'parent') {
+          role = 'parent';
+          name = 'Parent d\'élève';
+        }
+
+        window.currentSession.role = role;
+        window.currentSession.name = name;
+
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
         
         configureInterfaceForRole();
         updateUI();
       } else {
-        alert("Identifiants incorrects. Utilisez : eleve, parent ou prof.");
+        alert("Identifiant incorrect. Saisissez 'demo'.");
       }
     };
 
-    // Actions Professeur
+    // TOUT EFFACER & REINITIALISER À LA DÉCONNEXION
+    window.handleLogout = async function() {
+      if (confirm("Se déconnecter et réinitialiser toutes les données ?")) {
+        // Remise à zéro dans Firebase
+        await setDoc(doc(db, "students", "thomas"), getDefaultStudentData('thomas'));
+        await setDoc(doc(db, "students", "emma"), getDefaultStudentData('emma'));
+        location.reload();
+      }
+    };
+
+    // Professeur : Ajouter Note
     window.profAddGrade = async function(e) {
       e.preventDefault();
-      const studentRef = doc(db, "students", document.getElementById('prof-student-grade').value);
+      const stId = document.getElementById('prof-student-grade').value;
+      const studentRef = doc(db, "students", stId);
       await updateDoc(studentRef, {
         grades: arrayUnion({
           sub: document.getElementById('prof-subject').value,
@@ -343,8 +398,36 @@
           val: parseFloat(document.getElementById('prof-note').value)
         })
       });
-      alert("Note envoyée !");
+      alert("Note ajoutée !");
       e.target.reset();
+    };
+
+    // Professeur : Éditer Note
+    window.editGrade = async function(stId, index) {
+      const student = window.dbData[stId];
+      if (!student || !student.grades[index]) return;
+
+      const current = student.grades[index];
+      const newSub = prompt("Matière :", current.sub);
+      const newTitle = prompt("Titre :", current.title);
+      const newVal = prompt("Note (/20) :", current.val);
+
+      if (newSub && newTitle && !isNaN(parseFloat(newVal))) {
+        const updatedGrades = [...student.grades];
+        updatedGrades[index] = { sub: newSub, title: newTitle, val: parseFloat(newVal) };
+        
+        await updateDoc(doc(db, "students", stId), { grades: updatedGrades });
+        alert("Note modifiée !");
+      }
+    };
+
+    // Professeur : Supprimer Note
+    window.deleteGrade = async function(stId, index) {
+      if (confirm("Voulez-vous supprimer cette note ?")) {
+        const student = window.dbData[stId];
+        const updatedGrades = student.grades.filter((_, i) => i !== index);
+        await updateDoc(doc(db, "students", stId), { grades: updatedGrades });
+      }
     };
 
     window.profAddHomework = async function(e) {
@@ -361,7 +444,6 @@
       e.target.reset();
     };
 
-    // Action Parent : Envoi de message
     window.sendMessage = async function(e) {
       e.preventDefault();
       const studentRef = doc(db, "students", window.currentSession.activeStudent);
@@ -400,16 +482,15 @@
       parentControls.style.display = 'none';
 
       if (window.currentSession.role === 'prof') {
-        roleTag.innerText = "(Professeur)";
+        roleTag.innerText = `(${window.currentSession.name})`;
         nav.innerHTML = `
-          <button class="active" onclick="switchTab('prof-tools', this)"><span>📝</span> Saisie Prof</button>
+          <button class="active" onclick="switchTab('prof-tools', this)"><span>📝</span> Gestion Notes / Devoirs</button>
         `;
         switchTab('prof-tools');
       } else {
         if (window.currentSession.role === 'parent') {
-          roleTag.innerText = "(Parent)";
+          roleTag.innerText = "(Espace Parent)";
           parentControls.style.display = 'flex';
-          
           nav.innerHTML = `
             <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
             <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
@@ -418,7 +499,7 @@
             <button onclick="switchTab('contact', this)"><span>✉️</span> Contact</button>
           `;
         } else {
-          roleTag.innerText = "(Élève)";
+          roleTag.innerText = "(Espace Élève)";
           nav.innerHTML = `
             <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
             <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
@@ -430,15 +511,43 @@
       }
     }
 
+    window.renderProfEditGrades = function() {
+      const stId = document.getElementById('edit-student-select').value;
+      const student = window.dbData[stId];
+      const tbody = document.getElementById('prof-edit-grades-body');
+
+      if (!student || !student.grades || student.grades.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Aucune note saisie.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = student.grades.map((g, i) => `
+        <tr>
+          <td><strong>${g.sub}</strong></td>
+          <td>${g.title}</td>
+          <td><span class="badge bg-blue">${g.val}/20</span></td>
+          <td>
+            <button class="btn-edit" onclick="editGrade('${stId}', ${i})">✏️ Éditer</button>
+            <button class="btn-del" onclick="deleteGrade('${stId}', ${i})">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    };
+
     function updateUI() {
-      if (window.currentSession.role === 'prof') return;
+      document.getElementById('user-display-name').innerText = window.currentSession.name || 'Utilisateur';
+
+      if (window.currentSession.role === 'prof') {
+        renderProfEditGrades();
+        return;
+      }
 
       const student = window.dbData[window.currentSession.activeStudent];
       if (!student) return;
 
       document.getElementById('dash-title').innerText = `Bonjour, ${student.name}`;
 
-      // Notes
+      // Tables notes
       const gBody = document.getElementById('grades-table-body');
       gBody.innerHTML = (student.grades || []).map(g => `
         <tr>
@@ -464,7 +573,7 @@
         `).join('');
       }
 
-      // Vie Scolaire
+      // Vie Sco
       document.getElementById('count-absences').innerText = (student.incidents || []).filter(i => i.type === 'Absence').length;
       document.getElementById('count-retards').innerText = (student.incidents || []).filter(i => i.type === 'Retard').length;
 
@@ -473,7 +582,7 @@
         ? '<tr><td colspan="3" style="text-align:center; color:#94a3b8">Rien à signaler.</td></tr>'
         : student.incidents.map(i => `<tr><td>${i.date}</td><td><strong>${i.type}</strong></td><td>${i.motif}</td></tr>`).join('');
 
-      // Messages (Parents)
+      // Messages
       if (window.currentSession.role === 'parent') {
         const msgList = document.getElementById('messages-list');
         if(!student.messages || student.messages.length === 0) {
