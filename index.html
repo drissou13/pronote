@@ -199,30 +199,32 @@
     </div>
   </div>
 
-  <!-- SCRIPT FIREBASE GOOGLE (SDK v9) -->
+  <!-- SCRIPT FIREBASE GOOGLE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ⚠️ REMPLACEZ AVEC VOS PROPRES CLÉS FIREBASE (Trouvables dans la console Firebase)
+    // Vos identifiants Firebase intégrés
     const firebaseConfig = {
-      apiKey: "VOTRE_API_KEY",
-      authDomain: "votre-projet.firebaseapp.com",
-      projectId: "votre-projet-id",
-      storageBucket: "votre-projet.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
+      apiKey: "AIzaSyAm2zDmRYPdEx8dtmtsa3Vp9ALrAdcxiKI",
+      authDomain: "pronote-f721d.firebaseapp.com",
+      projectId: "pronote-f721d",
+      storageBucket: "pronote-f721d.firebasestorage.app",
+      messagingSenderId: "954176545910",
+      appId: "1:954176545910:web:9fd820d47725664de3ab57",
+      measurementId: "G-MF8CLM37PB"
     };
 
-    // Initialisation
+    // Initialisation de Firebase & Firestore
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     window.currentSession = { role: null, activeStudent: 'thomas' };
     window.dbData = {};
 
-    // ECOUTE EN TEMPS RÉEL DE GOOGLE FIREBASE
-    // Chaque modification sur n'importe quel poste déclenche automatiquement cette fonction !
+    // ÉCOUTE EN TEMPS RÉEL
     function listenToStudentData(studentId) {
       const studentRef = doc(db, "students", studentId);
       
@@ -230,7 +232,7 @@
         if (docSnap.exists()) {
           window.dbData[studentId] = docSnap.data();
         } else {
-          // Création initiale si le document n'existe pas encore sur Google
+          // Données par défaut créées au premier lancement
           const defaultData = {
             name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
             class: studentId === 'thomas' ? "3ème B" : "5ème A",
@@ -244,11 +246,10 @@
       });
     }
 
-    // Écoute des deux élèves en tâche de fond
     listenToStudentData('thomas');
     listenToStudentData('emma');
 
-    // EXPOSITION DES FONCTIONS AU WINDOW POUR LES ÉVÉNEMENTS HTML
+    // FONCTIONS D'INTERFACE
     window.handleLogin = function() {
       const type = document.getElementById('user-type').value;
       const username = document.getElementById('username').value.trim().toLowerCase();
@@ -275,13 +276,12 @@
       const title = document.getElementById('prof-title').value;
       const val = parseFloat(document.getElementById('prof-note').value);
 
-      // Envoi direct à Google Firestore
       const studentRef = doc(db, "students", targetStudent);
       await updateDoc(studentRef, {
         grades: arrayUnion({ sub, title, val })
       });
 
-      alert("Note envoyée sur Google Cloud ! Elle apparaît immédiatement chez l'élève.");
+      alert("Note ajoutée sur Google Cloud !");
       e.target.reset();
     };
 
@@ -291,7 +291,6 @@
       const type = document.getElementById('prof-inc-type').value;
       const motif = document.getElementById('prof-inc-motif').value;
 
-      // Envoi direct à Google Firestore
       const studentRef = doc(db, "students", targetStudent);
       await updateDoc(studentRef, {
         incidents: arrayUnion({
@@ -303,7 +302,7 @@
         })
       });
 
-      alert("Signalement envoyé sur Google Cloud !");
+      alert("Signalement enregistré !");
       e.target.reset();
     };
 
@@ -369,7 +368,7 @@
 
       document.getElementById('dash-title').innerText = `Bienvenue, ${student.name}`;
 
-      // Rendus des notes
+      // Affichage des notes
       const gBody = document.getElementById('grades-table-body');
       gBody.innerHTML = (student.grades || []).map(g => `
         <tr>
@@ -379,7 +378,7 @@
         </tr>
       `).join('');
 
-      // Rendus Vie Scolaire
+      // Affichage Vie Scolaire
       const absCount = (student.incidents || []).filter(i => i.type === 'Absence').length;
       const retCount = (student.incidents || []).filter(i => i.type === 'Retard').length;
 
