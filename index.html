@@ -2,69 +2,93 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRONOTE - Multi-postes Temps Réel (Google Firebase)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Notepro</title>
   <style>
-    /* --- STYLES GENERAUX --- */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; }
+    /* --- RESET & VARIABLES --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #f8fafc; color: #0f172a; min-height: 100vh; display: flex; flex-direction: column; }
 
     /* --- PAGE DE CONNEXION --- */
-    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; }
-    .login-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-    .login-card h1 { color: #1e3a8a; margin-bottom: 6px; }
-    .form-group { margin-bottom: 12px; text-align: left; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; color: #475569; margin-bottom: 4px; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    .demo-info { margin-top: 15px; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 0.75rem; color: #64748b; text-align: left; }
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; padding: 16px; }
+    .login-card { background: white; padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+    .login-card h1 { color: #1e3a8a; margin-bottom: 4px; font-size: 1.8rem; }
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background: #fff; }
+    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+    .btn-submit:active { background: #1d4ed8; }
+    .demo-info { margin-top: 16px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.8rem; color: #64748b; text-align: left; line-height: 1.4; }
 
-    /* --- APPLICATION --- */
-    #app { display: none; flex-direction: column; height: 100vh; }
-    header { background: #1e3a8a; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-    .app-body { display: flex; flex: 1; overflow: hidden; }
-    nav { width: 220px; background: #0f172a; padding-top: 15px; }
-    nav button { background: none; border: none; color: #94a3b8; padding: 14px 20px; width: 100%; text-align: left; cursor: pointer; border-left: 4px solid transparent; font-size: 0.95rem; }
-    nav button.active, nav button:hover { color: white; background: #1e293b; }
-    nav button.active { border-left-color: #3b82f6; font-weight: bold; }
-    main { flex: 1; padding: 24px; overflow-y: auto; }
+    /* --- LAYOUT MOBILE & DESKTOP --- */
+    #app { display: none; flex-direction: column; min-height: 100vh; }
+    
+    header { background: #1e3a8a; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .brand { font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .sync-status { width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block; }
+    
+    .app-body { display: flex; flex: 1; flex-direction: column; }
+    
+    /* Navigation du bas sur Mobile / Barre latérale sur Desktop */
+    nav { background: #0f172a; display: flex; overflow-x: auto; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
+    nav button { background: none; border: none; color: #94a3b8; padding: 12px 8px; flex: 1; min-width: 70px; text-align: center; cursor: pointer; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; white-space: nowrap; }
+    nav button.active { color: white; background: #1e293b; font-weight: bold; border-top: 3px solid #3b82f6; }
+    
+    main { flex: 1; padding: 16px; padding-bottom: 80px; max-width: 900px; margin: 0 auto; width: 100%; }
 
-    /* --- CARDS & TABLES --- */
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    /* Adapte la navigation pour tablette/ordinateur */
+    @media (min-width: 768px) {
+      .app-body { flex-direction: row; }
+      nav { position: static; width: 220px; flex-direction: column; overflow-x: visible; box-shadow: none; }
+      nav button { flex-direction: row; justify-content: flex-start; padding: 14px 20px; font-size: 0.95rem; border-top: none; border-left: 4px solid transparent; min-width: auto; }
+      nav button.active { border-top: none; border-left-color: #3b82f6; }
+      main { padding-bottom: 24px; }
+    }
+
+    /* --- COMPOSANTS UI MOBILE --- */
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-card { padding: 15px; border-radius: 8px; text-align: center; color: white; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat-card { padding: 12px; border-radius: 10px; text-align: center; color: white; }
     .stat-absences { background: #ef4444; }
     .stat-retards { background: #f59e0b; }
-    .stat-value { font-size: 2.2rem; font-weight: bold; }
+    .stat-value { font-size: 1.8rem; font-weight: bold; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    th { background: #f8fafc; font-size: 0.8rem; text-transform: uppercase; color: #64748b; }
+    /* Tables adaptées sur Mobile */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.9rem; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
 
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; display: inline-block; }
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; color: white; display: inline-block; }
     .bg-green { background: #10b981; }
     .bg-red { background: #ef4444; }
     .bg-orange { background: #f59e0b; }
     .bg-blue { background: #3b82f6; }
 
-    .child-selector { margin-bottom: 20px; background: #cbd5e1; padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
-    .form-inline { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    .form-inline input, .form-inline select, .form-inline button { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .form-inline button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; }
+    .child-selector { margin-bottom: 16px; background: #e2e8f0; padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9rem; }
     
-    .sync-status { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; margin-right: 5px; }
+    /* Listes stylisées pour Devoirs et Messages */
+    .item-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+    .item-card { border-left: 4px solid #2563eb; background: #f8fafc; padding: 12px; border-radius: 0 8px 8px 0; }
+    .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .item-title { font-weight: bold; font-size: 0.95rem; color: #0f172a; }
+    .item-date { font-size: 0.75rem; color: #64748b; }
+    .item-desc { font-size: 0.85rem; color: #334155; line-height: 1.4; }
+
+    .form-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .btn-action { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; }
   </style>
 </head>
 <body>
 
-  <!-- CONNEXION -->
+  <!-- PAGE DE CONNEXION -->
   <div id="login-page" class="login-container">
     <div class="login-card">
       <h1>PRONOTE</h1>
-      <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px">Synchronisé avec Google Firebase</p>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px">Espace Mobile Synchronisé</p>
       
       <div class="form-group">
         <label>Espace de connexion</label>
@@ -84,7 +108,9 @@
 
       <div class="demo-info">
         <strong>Identifiants de démo :</strong><br>
-        • Élève : <code>eleve</code> | Parent : <code>parent</code> | Prof : <code>prof</code>
+        • Élève : <code>eleve</code><br>
+        • Parent : <code>parent</code><br>
+        • Prof : <code>prof</code>
       </div>
     </div>
   </div>
@@ -92,105 +118,145 @@
   <!-- APPLICATION -->
   <div id="app">
     <header>
-      <div style="font-weight:bold; font-size:1.1rem">
-        <span class="sync-status" title="Connecté au cloud Google"></span> PRONOTE <span id="role-tag" style="font-weight:normal; font-size:0.8rem; opacity:0.8"></span>
+      <div class="brand">
+        <span class="sync-status"></span>
+        PRONOTE <span id="role-tag" style="font-size:0.75rem; opacity:0.8; font-weight:normal"></span>
       </div>
-      <div>
-        <span id="user-display"></span> 
-        <button onclick="location.reload()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:10px">Déconnexion</button>
-      </div>
+      <button onclick="location.reload()" style="background:rgba(255,255,255,0.15); border:none; color:white; padding:6px 12px; border-radius:6px; font-size:0.8rem">Sortir</button>
     </header>
 
     <div class="app-body">
+      <!-- Navigation (Bas sur mobile, Gauche sur écran large) -->
       <nav id="sidebar-nav"></nav>
 
       <main>
         <div id="parent-controls" class="child-selector" style="display:none">
-          <strong>Enfant suivi : </strong>
-          <select id="child-select" onchange="changeStudent(this.value)">
-            <option value="thomas">Thomas DUBOIS (3ème B)</option>
-            <option value="emma">Emma DUBOIS (5ème A)</option>
+          <span><strong>Enfant :</strong></span>
+          <select id="child-select" class="form-control" style="width:auto; padding:6px" onchange="changeStudent(this.value)">
+            <option value="thomas">Thomas DUBOIS (3e B)</option>
+            <option value="emma">Emma DUBOIS (5e A)</option>
           </select>
         </div>
 
-        <!-- ONGLET ACCUEIL -->
+        <!-- ACCUEIL -->
         <section id="dashboard" class="tab-content">
-          <h2 id="dash-title">Accueil</h2>
-          <div class="card" style="margin-top:15px">
-            <h3>Base de données en temps réel</h3>
-            <p style="margin-top:8px; color:#475569">Les modifications apportées par un professeur sur un poste apparaîtront automatiquement ici.</p>
-          </div>
-        </section>
-
-        <!-- ONGLET NOTES -->
-        <section id="grades" class="tab-content">
-          <h2>Relevé de notes</h2>
+          <h2 id="dash-title" style="font-size:1.3rem; margin-bottom:12px">Accueil</h2>
           <div class="card">
-            <table>
-              <thead>
-                <tr><th>Matière</th><th>Devoir</th><th>Note</th></tr>
-              </thead>
-              <tbody id="grades-table-body"></tbody>
-            </table>
+            <h3 style="font-size:1rem; margin-bottom:6px">📢 Informations établissement</h3>
+            <p style="color:#475569; font-size:0.85rem; line-height:1.4">Bienvenue sur l'application mobile PRONOTE. Vos notes, devoirs et messages sont synchronisés en temps réel.</p>
           </div>
         </section>
 
-        <!-- ONGLET VIE SCOLAIRE -->
+        <!-- NOTES -->
+        <section id="grades" class="tab-content">
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Relevé de notes</h2>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Matière</th><th>Devoir</th><th>Note</th></tr>
+                </thead>
+                <tbody id="grades-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEVOIRS (NOUVEAU) -->
+        <section id="homework" class="tab-content">
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Cahier de textes / Devoirs</h2>
+          <div class="card">
+            <h3 style="font-size:1rem">Devoirs à faire</h3>
+            <div id="homework-list" class="item-list"></div>
+          </div>
+        </section>
+
+        <!-- VIE SCOLAIRE -->
         <section id="viesco" class="tab-content">
-          <h2>Vie Scolaire</h2>
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Vie Scolaire</h2>
           <div class="stats-grid">
             <div class="stat-card stat-absences">
               <div class="stat-value" id="count-absences">0</div>
-              <div>Absence(s)</div>
+              <div style="font-size:0.8rem">Absence(s)</div>
             </div>
             <div class="stat-card stat-retards">
               <div class="stat-value" id="count-retards">0</div>
-              <div>Retard(s)</div>
+              <div style="font-size:0.8rem">Retard(s)</div>
             </div>
           </div>
           <div class="card">
-            <h3>Historique en direct</h3>
-            <table>
-              <thead>
-                <tr><th>Date</th><th>Type</th><th>Motif</th><th>Statut</th></tr>
-              </thead>
-              <tbody id="incidents-table-body"></tbody>
-            </table>
+            <h3 style="font-size:1rem">Historique</h3>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Type</th><th>Motif</th></tr>
+                </thead>
+                <tbody id="incidents-table-body"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
-        <!-- ONGLET PROF : NOTES -->
-        <section id="prof-grades" class="tab-content">
-          <h2>Espace Professeur - Saisie de Note</h2>
+        <!-- CONTACT / MESSAGERIE (NOUVEAU - PARENTS) -->
+        <section id="contact" class="tab-content">
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Messagerie & Contact</h2>
+          
           <div class="card">
-            <form class="form-inline" onsubmit="profAddGrade(event)">
-              <select id="prof-student-grade">
-                <option value="thomas">Thomas DUBOIS (3ème B)</option>
-                <option value="emma">Emma DUBOIS (5ème A)</option>
+            <h3 style="font-size:1rem; margin-bottom:10px">✉️ Envoyer un message</h3>
+            <form class="form-stack" onsubmit="sendMessage(event)">
+              <select id="msg-recipient" class="form-control" required>
+                <optgroup label="Professeurs">
+                  <option value="Prof. Maths">M. Martin (Professeur de Maths)</option>
+                  <option value="Prof. Français">Mme. Dupont (Professeure de Français)</option>
+                  <option value="Prof. Histoire">M. Bernard (Professeur d'Histoire)</option>
+                </optgroup>
+                <optgroup label="Administration">
+                  <option value="Secrétariat">Secrétariat du collège</option>
+                  <option value="Vie Scolaire">Bureau de la Vie Scolaire (CPE)</option>
+                  <option value="Direction">Direction de l'établissement</option>
+                </optgroup>
               </select>
-              <input type="text" id="prof-subject" placeholder="Matière" required>
-              <input type="text" id="prof-title" placeholder="Titre du devoir" required>
-              <input type="number" step="0.5" min="0" max="20" id="prof-note" placeholder="Note /20" required>
-              <button type="submit">Publier la note sur Google Cloud</button>
+              <input type="text" id="msg-subject" class="form-control" placeholder="Sujet du message" required>
+              <textarea id="msg-body" class="form-control" rows="3" placeholder="Votre message..." required></textarea>
+              <button type="submit" class="btn-action">Envoyer le message</button>
             </form>
           </div>
+
+          <div class="card">
+            <h3 style="font-size:1rem">Messages envoyés</h3>
+            <div id="messages-list" class="item-list"></div>
+          </div>
         </section>
 
-        <!-- ONGLET PROF : VIE SCOLAIRE -->
-        <section id="prof-viesco" class="tab-content">
-          <h2>Espace Professeur - Signalement Vie Scolaire</h2>
+        <!-- ESPACE PROF : NOTES & DEVOIRS -->
+        <section id="prof-tools" class="tab-content">
+          <h2 style="font-size:1.3rem; margin-bottom:12px">Saisie Professeur</h2>
+          
           <div class="card">
-            <form class="form-inline" onsubmit="profAddIncident(event)">
-              <select id="prof-student-inc">
-                <option value="thomas">Thomas DUBOIS (3ème B)</option>
-                <option value="emma">Emma DUBOIS (5ème A)</option>
+            <h3 style="font-size:1rem; margin-bottom:10px">📝 Saisir une Note</h3>
+            <form class="form-stack" onsubmit="profAddGrade(event)">
+              <select id="prof-student-grade" class="form-control">
+                <option value="thomas">Thomas DUBOIS (3e B)</option>
+                <option value="emma">Emma DUBOIS (5e A)</option>
               </select>
-              <select id="prof-inc-type">
-                <option value="Absence">Absence</option>
-                <option value="Retard">Retard</option>
+              <input type="text" id="prof-subject" class="form-control" placeholder="Matière" required>
+              <input type="text" id="prof-title" class="form-control" placeholder="Titre du devoir" required>
+              <input type="number" step="0.5" min="0" max="20" id="prof-note" class="form-control" placeholder="Note /20" required>
+              <button type="submit" class="btn-action">Publier la note</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:1rem; margin-bottom:10px">📚 Donner un Devoir</h3>
+            <form class="form-stack" onsubmit="profAddHomework(event)">
+              <select id="prof-student-hw" class="form-control">
+                <option value="thomas">Thomas DUBOIS (3e B)</option>
+                <option value="emma">Emma DUBOIS (5e A)</option>
               </select>
-              <input type="text" id="prof-inc-motif" placeholder="Motif ou cours" required>
-              <button type="submit" style="background:#ef4444">Signaler en direct</button>
+              <input type="text" id="prof-hw-subject" class="form-control" placeholder="Matière" required>
+              <input type="date" id="prof-hw-date" class="form-control" required>
+              <textarea id="prof-hw-desc" class="form-control" rows="2" placeholder="Travail à faire..." required></textarea>
+              <button type="submit" class="btn-action" style="background:#2563eb">Ajouter le devoir</button>
             </form>
           </div>
         </section>
@@ -199,13 +265,12 @@
     </div>
   </div>
 
-  <!-- SCRIPT FIREBASE GOOGLE -->
+  <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Vos identifiants Firebase intégrés
     const firebaseConfig = {
       apiKey: "AIzaSyAm2zDmRYPdEx8dtmtsa3Vp9ALrAdcxiKI",
       authDomain: "pronote-f721d.firebaseapp.com",
@@ -216,7 +281,6 @@
       measurementId: "G-MF8CLM37PB"
     };
 
-    // Initialisation de Firebase & Firestore
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
@@ -224,7 +288,6 @@
     window.currentSession = { role: null, activeStudent: 'thomas' };
     window.dbData = {};
 
-    // ÉCOUTE EN TEMPS RÉEL
     function listenToStudentData(studentId) {
       const studentRef = doc(db, "students", studentId);
       
@@ -232,12 +295,13 @@
         if (docSnap.exists()) {
           window.dbData[studentId] = docSnap.data();
         } else {
-          // Données par défaut créées au premier lancement
           const defaultData = {
             name: studentId === 'thomas' ? "Thomas DUBOIS" : "Emma DUBOIS",
             class: studentId === 'thomas' ? "3ème B" : "5ème A",
-            grades: [{ sub: "Maths", title: "Test Initial", val: 14 }],
-            incidents: []
+            grades: [{ sub: "Maths", title: "Contrôle 1", val: 15 }],
+            homework: [{ sub: "Français", date: "Demain", desc: "Lire le chapitre 3 du roman." }],
+            incidents: [],
+            messages: []
           };
           setDoc(studentRef, defaultData);
           window.dbData[studentId] = defaultData;
@@ -249,7 +313,6 @@
     listenToStudentData('thomas');
     listenToStudentData('emma');
 
-    // FONCTIONS D'INTERFACE
     window.handleLogin = function() {
       const type = document.getElementById('user-type').value;
       const username = document.getElementById('username').value.trim().toLowerCase();
@@ -269,46 +332,54 @@
       }
     };
 
+    // Actions Professeur
     window.profAddGrade = async function(e) {
       e.preventDefault();
-      const targetStudent = document.getElementById('prof-student-grade').value;
-      const sub = document.getElementById('prof-subject').value;
-      const title = document.getElementById('prof-title').value;
-      const val = parseFloat(document.getElementById('prof-note').value);
-
-      const studentRef = doc(db, "students", targetStudent);
+      const studentRef = doc(db, "students", document.getElementById('prof-student-grade').value);
       await updateDoc(studentRef, {
-        grades: arrayUnion({ sub, title, val })
+        grades: arrayUnion({
+          sub: document.getElementById('prof-subject').value,
+          title: document.getElementById('prof-title').value,
+          val: parseFloat(document.getElementById('prof-note').value)
+        })
       });
-
-      alert("Note ajoutée sur Google Cloud !");
+      alert("Note envoyée !");
       e.target.reset();
     };
 
-    window.profAddIncident = async function(e) {
+    window.profAddHomework = async function(e) {
       e.preventDefault();
-      const targetStudent = document.getElementById('prof-student-inc').value;
-      const type = document.getElementById('prof-inc-type').value;
-      const motif = document.getElementById('prof-inc-motif').value;
-
-      const studentRef = doc(db, "students", targetStudent);
+      const studentRef = doc(db, "students", document.getElementById('prof-student-hw').value);
       await updateDoc(studentRef, {
-        incidents: arrayUnion({
-          date: "Aujourd'hui",
-          type: type,
-          motif: motif,
-          status: "Non justifié",
-          color: "bg-red"
+        homework: arrayUnion({
+          sub: document.getElementById('prof-hw-subject').value,
+          date: document.getElementById('prof-hw-date').value,
+          desc: document.getElementById('prof-hw-desc').value
         })
       });
+      alert("Devoir ajouté !");
+      e.target.reset();
+    };
 
-      alert("Signalement enregistré !");
+    // Action Parent : Envoi de message
+    window.sendMessage = async function(e) {
+      e.preventDefault();
+      const studentRef = doc(db, "students", window.currentSession.activeStudent);
+      await updateDoc(studentRef, {
+        messages: arrayUnion({
+          recipient: document.getElementById('msg-recipient').value,
+          subject: document.getElementById('msg-subject').value,
+          body: document.getElementById('msg-body').value,
+          date: new Date().toLocaleDateString('fr-FR')
+        })
+      });
+      alert("Message envoyé !");
       e.target.reset();
     };
 
     window.switchTab = function(tabId, btnElement) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       
       const target = document.getElementById(tabId);
       if(target) target.classList.add('active');
@@ -329,27 +400,32 @@
       parentControls.style.display = 'none';
 
       if (window.currentSession.role === 'prof') {
-        roleTag.innerText = "(Espace Professeur)";
-        document.getElementById('user-display').innerText = "M. MARTIN (Enseignant)";
-        
+        roleTag.innerText = "(Professeur)";
         nav.innerHTML = `
-          <button class="nav-btn active" onclick="switchTab('prof-grades', this)">📝 Saisie des Notes</button>
-          <button class="nav-btn" onclick="switchTab('prof-viesco', this)">🚨 Signalements Vie Sco</button>
+          <button class="active" onclick="switchTab('prof-tools', this)"><span>📝</span> Saisie Prof</button>
         `;
-        switchTab('prof-grades');
+        switchTab('prof-tools');
       } else {
         if (window.currentSession.role === 'parent') {
-          roleTag.innerText = "(Espace Parents)";
+          roleTag.innerText = "(Parent)";
           parentControls.style.display = 'flex';
+          
+          nav.innerHTML = `
+            <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
+            <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
+            <button onclick="switchTab('homework', this)"><span>📚</span> Devoirs</button>
+            <button onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
+            <button onclick="switchTab('contact', this)"><span>✉️</span> Contact</button>
+          `;
         } else {
-          roleTag.innerText = "(Espace Élève)";
+          roleTag.innerText = "(Élève)";
+          nav.innerHTML = `
+            <button class="active" onclick="switchTab('dashboard', this)"><span>🏠</span> Accueil</button>
+            <button onclick="switchTab('grades', this)"><span>📊</span> Notes</button>
+            <button onclick="switchTab('homework', this)"><span>📚</span> Devoirs</button>
+            <button onclick="switchTab('viesco', this)"><span>📅</span> Vie Sco</button>
+          `;
         }
-
-        nav.innerHTML = `
-          <button class="nav-btn active" onclick="switchTab('dashboard', this)">🏠 Accueil</button>
-          <button class="nav-btn" onclick="switchTab('grades', this)">📊 Notes</button>
-          <button class="nav-btn" onclick="switchTab('viesco', this)">📅 Vie Scolaire</button>
-        `;
         switchTab('dashboard');
       }
     }
@@ -360,15 +436,9 @@
       const student = window.dbData[window.currentSession.activeStudent];
       if (!student) return;
 
-      if(window.currentSession.role === 'parent') {
-        document.getElementById('user-display').innerText = `Parent de ${student.name}`;
-      } else {
-        document.getElementById('user-display').innerText = `${student.name} (${student.class})`;
-      }
+      document.getElementById('dash-title').innerText = `Bonjour, ${student.name}`;
 
-      document.getElementById('dash-title').innerText = `Bienvenue, ${student.name}`;
-
-      // Affichage des notes
+      // Notes
       const gBody = document.getElementById('grades-table-body');
       gBody.innerHTML = (student.grades || []).map(g => `
         <tr>
@@ -378,25 +448,48 @@
         </tr>
       `).join('');
 
-      // Affichage Vie Scolaire
-      const absCount = (student.incidents || []).filter(i => i.type === 'Absence').length;
-      const retCount = (student.incidents || []).filter(i => i.type === 'Retard').length;
+      // Devoirs
+      const hwList = document.getElementById('homework-list');
+      if(!student.homework || student.homework.length === 0) {
+        hwList.innerHTML = '<p style="color:#64748b; font-size:0.85rem">Aucun devoir à faire.</p>';
+      } else {
+        hwList.innerHTML = student.homework.map(h => `
+          <div class="item-card">
+            <div class="item-header">
+              <span class="item-title">${h.sub}</span>
+              <span class="item-date">Pour le : ${h.date}</span>
+            </div>
+            <div class="item-desc">${h.desc}</div>
+          </div>
+        `).join('');
+      }
 
-      document.getElementById('count-absences').innerText = absCount;
-      document.getElementById('count-retards').innerText = retCount;
+      // Vie Scolaire
+      document.getElementById('count-absences').innerText = (student.incidents || []).filter(i => i.type === 'Absence').length;
+      document.getElementById('count-retards').innerText = (student.incidents || []).filter(i => i.type === 'Retard').length;
 
       const iBody = document.getElementById('incidents-table-body');
-      if(!student.incidents || student.incidents.length === 0) {
-        iBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8">Aucun incident.</td></tr>';
-      } else {
-        iBody.innerHTML = student.incidents.map(i => `
-          <tr>
-            <td>${i.date}</td>
-            <td><strong>${i.type}</strong></td>
-            <td>${i.motif}</td>
-            <td><span class="badge ${i.color}">${i.status}</span></td>
-          </tr>
-        `).join('');
+      iBody.innerHTML = (!student.incidents || student.incidents.length === 0) 
+        ? '<tr><td colspan="3" style="text-align:center; color:#94a3b8">Rien à signaler.</td></tr>'
+        : student.incidents.map(i => `<tr><td>${i.date}</td><td><strong>${i.type}</strong></td><td>${i.motif}</td></tr>`).join('');
+
+      // Messages (Parents)
+      if (window.currentSession.role === 'parent') {
+        const msgList = document.getElementById('messages-list');
+        if(!student.messages || student.messages.length === 0) {
+          msgList.innerHTML = '<p style="color:#64748b; font-size:0.85rem">Aucun message envoyé.</p>';
+        } else {
+          msgList.innerHTML = student.messages.map(m => `
+            <div class="item-card" style="border-left-color:#10b981">
+              <div class="item-header">
+                <span class="item-title">À : ${m.recipient}</span>
+                <span class="item-date">${m.date}</span>
+              </div>
+              <div style="font-weight:600; font-size:0.85rem; margin-bottom:4px">${m.subject}</div>
+              <div class="item-desc">${m.body}</div>
+            </div>
+          `).join('');
+        }
       }
     }
   </script>
